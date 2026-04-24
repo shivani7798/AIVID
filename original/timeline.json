@@ -1,0 +1,72 @@
+[
+  {
+    "start_time": 0,
+    "end_time": 12,
+    "page_number": 0,
+    "highlight_text": "LLaMA-3.2-Vision",
+    "popup_text": "Breakthrough in scaling open VLMs"
+  },
+  {
+    "start_time": 12,
+    "end_time": 25,
+    "page_number": 1,
+    "highlight_text": "vision language models",
+    "popup_text": "Challenge: Efficient scaling at frontier scale"
+  },
+  {
+    "start_time": 25,
+    "end_time": 38,
+    "page_number": 2,
+    "highlight_text": "multimodal",
+    "popup_text": "Processes images and text together unified"
+  },
+  {
+    "start_time": 38,
+    "end_time": 52,
+    "page_number": 3,
+    "highlight_text": "vision encoder",
+    "popup_text": "Extracts visual features from images"
+  },
+  {
+    "start_time": 52,
+    "end_time": 65,
+    "page_number": 4,
+    "highlight_text": "transformer",
+    "popup_text": "Core architecture processes both modalities"
+  },
+  {
+    "start_time": 65,
+    "end_time": 78,
+    "page_number": 5,
+    "highlight_text": "context window",
+    "popup_text": "Extended sequence length for coherence"
+  },
+  {
+    "start_time": 78,
+    "end_time": 92,
+    "page_number": 6,
+    "highlight_text": "benchmarks",
+    "popup_text": "Evaluated on multiple VLM benchmarks"
+  },
+  {
+    "start_time": 92,
+    "end_time": 105,
+    "page_number": 7,
+    "highlight_text": "performance",
+    "popup_text": "Competitive with frontier VLMs"
+  },
+  {
+    "start_time": 105,
+    "end_time": 118,
+    "page_number": 8,
+    "highlight_text": "open source",
+    "popup_text": "Available to research community"
+  },
+  {
+    "start_time": 118,
+    "end_time": 130,
+    "page_number": 9,
+    "highlight_text": "efficiency",
+    "popup_text": "Optimized inference on various hardware"
+  }
+]
