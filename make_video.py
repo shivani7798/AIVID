@@ -18,14 +18,18 @@ def extract_pdf_text(pdf_path: Path) -> str:
     logging.info(f"[PDF] Opening {pdf_path}")
     doc = fitz.open(pdf_path)
     num_pages = len(doc)
-    max_pages = min(12, num_pages)
-    logging.info(f"[PDF] Pages: {num_pages}. Reading up to {max_pages}.")
+    logging.info(f"[PDF] Pages: {num_pages}. Reading all pages.")
     
     text = ""
-    for i in range(max_pages):
+    for i in range(num_pages):
         page_start = time.time()
         page = doc.load_page(i)
         page_text = page.get_text()
+        # Skip pages that are likely references
+        lines = page_text.split('\n')[:10]  # check first 10 lines
+        if any("reference" in line.lower() or "bibliography" in line.lower() for line in lines):
+            logging.info(f"[PDF] Skipping page {i} (likely references)")
+            continue
         text += page_text + "\n"
         page_elapsed = time.time() - page_start
         logging.debug(f"[PDF] Page {i}: {len(page_text)} chars in {page_elapsed:.2f}s")
@@ -46,6 +50,32 @@ def call_ollama(prompt: str) -> str:
         except Exception as e:
             logging.warning(f"[OLLAMA] {model} failed: {e}")
     raise RuntimeError("All Ollama model requests failed.")
+
+
+def deduplicate_lines(text):
+    seen = set()
+    result = []
+    for line in text.split("\n"):
+        if line.strip() and line not in seen:
+            result.append(line)
+            seen.add(line)
+    return "\n".join(result)
+    """Split text into chunks of approximately chunk_size characters."""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        if end < len(text):
+            # Try to break at a paragraph or sentence
+            while end > start and text[end] not in '\n\n':
+                end -= 1
+            if end == start:
+                end = start + chunk_size
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        start = end
+    return chunks
 
 
 def resolve_highlight_page(pdf_path: Path, highlight: str, default_page: int) -> int:
@@ -84,36 +114,66 @@ async def generate_audio_and_timeline(output_folder: Path):
     
     text = extract_pdf_text(pdf_path)
     
+    # Chunk the text and summarize each chunk
+    chunks = split_text_into_chunks(text, chunk_size=5000)
+    summaries = []
+    for i, chunk in enumerate(chunks):
+        summary_prompt = f"""
+You are a senior AI engineer reading a research paper.
+
+Extract:
+- key mechanisms (how it works)
+- architecture decisions
+- trade-offs and limitations
+
+Avoid generic summaries. Focus on technical reasoning.
+
+Text:
+{chunk}
+"""
+        try:
+            summary = call_ollama(summary_prompt)
+            summaries.append(summary)
+            logging.info(f"[SUMMARY] Chunk {i+1} summarized")
+        except Exception as e:
+            logging.warning(f"[SUMMARY] Failed to summarize chunk {i+1}: {e}")
+            summaries.append(chunk[:500])  # Fallback to truncated chunk
+    
+    paper_content = deduplicate_lines("\n\n".join(summaries))
+    
     # LLM Prompt
     prompt = f"""
 You are a Senior AI Engineering Architect creating a detailed, accessible technical explainer
 video for engineers who want actionable insight. Read the paper content below and identify the
-6 most important technical highlights, architecture choices, tradeoffs, and deployment risks.
+most important 5-7 technical highlights, architecture choices, tradeoffs, and deployment risks.
 
 Paper content:
-{text[:12000]}
+{paper_content[:60000]}
 
 Return ONLY a JSON object — no markdown, no preamble — with this exact structure:
 {{
   "title": "Short paper title",
   "segments": [
     {{
-      "text": "Narration text for this segment, 12-15 seconds of clear and confident engineering explanation.",
-      "highlight": "exact short phrase that appears verbatim in the paper",
-      "annotation": "Professional annotation explaining why this highlight matters.",
+      "text": "Narration text for this segment, 10 seconds of clear and confident engineering explanation.",
+      "highlight": "short phrase that appears verbatim in the paper",
+      "annotation": "Full sentence explaining why this highlight matters for design, performance, or reliability.",
       "page": 0
     }}
   ]
 }}
 
 Rules:
-- Create exactly 6 segments.
-- Each segment should be a distinct, important idea from the paper.
+- Create 5-7 segments.
+- Each segment should be a distinct, important idea from the paper, prioritizing depth over rigid structure.
 - Use accessible engineering language: no jargon-heavy sentences, but maintain technical depth.
-- "highlight" must be an exact phrase from the paper text above.
+- "highlight" must be a short phrase that appears verbatim in the paper text above.
 - "annotation" should explain why the highlight matters for design, performance, or reliability.
 - "page" is 0-indexed and should point to the page containing the highlight phrase.
+- Each segment MUST use a DIFFERENT page number. No page may appear twice.
+- Spread pages across the paper: segments from pages 0-5, 6-20, 21+.
 - Narration should sound like a senior AI engineer explaining architecture, cost, and practical deployment.
+- Aim for ~60 seconds total narration.
 - Do not output anything outside the JSON object.
 """
     
@@ -121,19 +181,21 @@ Rules:
     logging.info(f"[OLLAMA] Prompt size: {char_count} chars")
     start_time = time.time()
     
-    try:
-        llm_output = call_ollama(prompt)
-        elapsed = time.time() - start_time
-        logging.info(f"[OLLAMA] Response received in {elapsed:.2f}s")
-        logging.debug(f"[OLLAMA] Raw response preview: {llm_output[:400]}")
-        
-        data = json.loads(llm_output)
-        segments = data.get("segments", [])
-        if len(segments) != 6:
-            raise ValueError(f"Expected 6 segments, got {len(segments)}")
-        logging.info(f"[OLLAMA] Parsed {len(segments)} segments from LLM")
-    except Exception as e:
-        logging.warning(f"[OLLAMA] LLM failed or produced invalid output ({e}), using fallback segments")
+    data = None
+    for attempt in range(3):
+        try:
+            llm_output = call_ollama(prompt)
+            data = json.loads(llm_output)
+            segments = data.get("segments", [])
+            if 5 <= len(segments) <= 7:
+                break
+            else:
+                logging.warning(f"Attempt {attempt+1}: Expected 5-7 segments, got {len(segments)}, retrying...")
+        except Exception as e:
+            logging.warning(f"Attempt {attempt+1}: LLM failed or produced invalid output ({e}), retrying...")
+    
+    if data is None or not (5 <= len(segments) <= 7):
+        logging.warning("All attempts failed, using fallback segments")
         segments = [
             {"text": "This paper introduces a model architecture focused on efficiency and production readiness.", "highlight": "model architecture", "annotation": "Core design principle for the paper.", "page": 0},
             {"text": "The team balances compute costs with accuracy through careful model scaling and pruning.", "highlight": "compute costs", "annotation": "Shows how cost is managed in deployment.", "page": 1},
@@ -142,6 +204,11 @@ Rules:
             {"text": "The paper highlights robustness, failure modes, and the need for stable training pipelines.", "highlight": "failure modes", "annotation": "Operationally important for reliability.", "page": 4},
             {"text": "Future work outlines practical extensions for larger models and multimodal applications.", "highlight": "future work", "annotation": "Research direction for scaling the system.", "page": 5}
         ]
+    
+    elapsed = time.time() - start_time
+    logging.info(f"[OLLAMA] Response received in {elapsed:.2f}s")
+    logging.debug(f"[OLLAMA] Raw response preview: {llm_output[:400] if 'llm_output' in locals() else 'N/A'}")
+    logging.info(f"[OLLAMA] Parsed {len(segments)} segments from LLM")
     
     # Generate audio with edge-tts first so the video duration can match the narration
     narration_texts = [seg.get("text", "") for seg in segments]

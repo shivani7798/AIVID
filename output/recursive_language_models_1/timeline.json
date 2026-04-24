@@ -1,56 +1,56 @@
 [
   {
     "start_time": 0.0,
-    "end_time": 11.328333333333333,
+    "end_time": 6.371666666666666,
     "page_number": 0,
-    "popup_text": "This design choice enables RLMs to scale beyond the limitations of traditional LLMs' context windows, allowing for more efficient and effective long-context processing.",
-    "highlight_text": "treats long prompts as part of an external environment",
-    "annotation_text": "This design choice enables RLMs to scale beyond the limitations of traditional LLMs' context windows, allowing for more efficient and effective long-context processing.",
-    "narration_text": "Recursive Language Models (RLMs) treat long prompts as part of an external environment and allow the LLM to programmatically examine, decompose, and recursively call itself over snippets of the prompt."
+    "popup_text": "Core design principle for the paper.",
+    "highlight_text": "model architecture",
+    "annotation_text": "Core design principle for the paper.",
+    "narration_text": "This paper introduces a model architecture focused on efficiency and production readiness."
   },
   {
-    "start_time": 11.328333333333333,
-    "end_time": 22.656666666666666,
-    "page_number": 1,
-    "popup_text": "This design choice enables RLMs to tackle limitations of expressive power in recent work on coding agents, retrieval agents, and sub-agent delegation.",
-    "highlight_text": "symbolic recursion",
-    "annotation_text": "This design choice enables RLMs to tackle limitations of expressive power in recent work on coding agents, retrieval agents, and sub-agent delegation.",
-    "narration_text": "RLMs make three simple design choices that are missing from existing scaffolds: symbolic recursion, a symbolic handle to the user prompt, and a separate function for invoking a sub-RLM."
+    "start_time": 6.371666666666666,
+    "end_time": 12.743333333333332,
+    "page_number": 3,
+    "popup_text": "Shows how cost is managed in deployment.",
+    "highlight_text": "compute costs",
+    "annotation_text": "Shows how cost is managed in deployment.",
+    "narration_text": "The team balances compute costs with accuracy through careful model scaling and pruning."
   },
   {
-    "start_time": 22.656666666666666,
-    "end_time": 33.985,
+    "start_time": 12.743333333333332,
+    "end_time": 19.115,
     "page_number": 2,
-    "popup_text": "This design choice enables RLMs to handle long prompts and outputs without being limited by the context window of the underlying LLM, resulting in improved performance and scalability.",
-    "highlight_text": "unbounded input and output tokens",
-    "annotation_text": "This design choice enables RLMs to handle long prompts and outputs without being limited by the context window of the underlying LLM, resulting in improved performance and scalability.",
-    "narration_text": "RLMs achieve unbounded input and output tokens and an unbounded semantic horizon, enabling them to perform \u2126(|P|) or \u2126(|P|2) semantic work."
+    "popup_text": "Critical for real-world inference workloads.",
+    "highlight_text": "memory optimization",
+    "annotation_text": "Critical for real-world inference workloads.",
+    "narration_text": "Memory optimization is emphasized to support longer context windows without blowing up resource usage."
   },
   {
-    "start_time": 33.985,
-    "end_time": 45.31333333333333,
-    "page_number": 10,
-    "popup_text": "This result highlights the effectiveness of RLMs in overcoming limitations of traditional LLMs and context compaction methods, enabling more efficient and effective long-context processing.",
-    "highlight_text": "substantially better performance at long-context processing",
-    "annotation_text": "This result highlights the effectiveness of RLMs in overcoming limitations of traditional LLMs and context compaction methods, enabling more efficient and effective long-context processing.",
-    "narration_text": "RLMs outperform direct LLM calls and context compaction, with substantially better performance at long-context processing, often by double-digit percentage gains."
+    "start_time": 19.115,
+    "end_time": 25.486666666666665,
+    "page_number": 3,
+    "popup_text": "Important for evaluating model performance.",
+    "highlight_text": "experimental results",
+    "annotation_text": "Important for evaluating model performance.",
+    "narration_text": "Experimental results measure latency, throughput, and tradeoffs across different system configurations."
   },
   {
-    "start_time": 45.31333333333333,
-    "end_time": 56.641666666666666,
-    "page_number": 1,
-    "popup_text": "This result suggests that RLMs are a flexible and adaptable architecture that can be fine-tuned for specific tasks and domains, enabling more efficient and effective deployment.",
-    "highlight_text": "can be improved quickly with little additional training",
-    "annotation_text": "This result suggests that RLMs are a flexible and adaptable architecture that can be fine-tuned for specific tasks and domains, enabling more efficient and effective deployment.",
-    "narration_text": "RLMs can be improved quickly with little additional training, demonstrating that they can be fine-tuned for specific tasks and domains."
+    "start_time": 25.486666666666665,
+    "end_time": 31.85833333333333,
+    "page_number": 4,
+    "popup_text": "Operationally important for reliability.",
+    "highlight_text": "failure modes",
+    "annotation_text": "Operationally important for reliability.",
+    "narration_text": "The paper highlights robustness, failure modes, and the need for stable training pipelines."
   },
   {
-    "start_time": 56.641666666666666,
-    "end_time": 67.97,
-    "page_number": 0,
-    "popup_text": "This result highlights the cost-effectiveness of RLMs, enabling developers to achieve improved performance and scalability at a comparable cost to traditional LLMs.",
-    "highlight_text": "comparable cost to direct LLM calls",
-    "annotation_text": "This result highlights the cost-effectiveness of RLMs, enabling developers to achieve improved performance and scalability at a comparable cost to traditional LLMs.",
-    "narration_text": "RLMs have comparable cost to direct LLM calls, but with improved performance and scalability, making them a more efficient and effective choice for long-context processing."
+    "start_time": 31.85833333333333,
+    "end_time": 38.23,
+    "page_number": 7,
+    "popup_text": "Research direction for scaling the system.",
+    "highlight_text": "future work",
+    "annotation_text": "Research direction for scaling the system.",
+    "narration_text": "Future work outlines practical extensions for larger models and multimodal applications."
   }
 ]
